@@ -1,0 +1,185 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Blockly Sample App</title>
+  <style>
+    /* Basic styling */
+    body {
+      font-family: Arial, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      height: 100vh;
+      margin: 0;
+    }
+    
+    #pageContainer {
+      display: flex;
+      width: 100%;
+    }
+    
+    #jsonContainer {
+      width: 50%;
+      height: 100vh; /* Adjust height as needed */
+      border: 1px solid #ccc;
+      padding: 10px;
+      overflow: auto; /* Enable s Space between JSON container and Blockly workspace */
+    }
+    
+    #blocklyDiv {
+      width: 50%; /* Updated width for Blockly workspace */
+      height: 100vh; /* Fixed height for Blockly workspace */
+      border: 1px solid #ccc;
+      margin-right: 20px; /* Space between Blockly workspace and table */
+      position: relative; /* Required for positioning the trash icon */
+    }
+
+  
+    
+    #tableContainer {
+      width: 30%; /* Width for table container */
+      padding: 20px;
+      border: 1px solid #ccc;
+      position: relative; /* Required for absolute positioning of button */
+    }
+    
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 20px;
+    }
+    
+    table, th, td {
+      border: 1px solid black;
+      padding: 8px;
+    }
+    
+    #generateButton {
+      position: absolute;
+      bottom: 10px;
+      left: 10px;
+      padding: 10px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+
+    #resetTableButton {
+      position: absolute;
+      bottom: 10px;
+      left: 100px;
+      padding: 10px;
+      background-color: #ef0c0c;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+   
+    #messageTextarea {
+      resize: vertical; /* Allows vertical resizing */
+      width: 100%; /* Adjust width as needed */
+      box-sizing: border-box; /* Ensures padding and border are included in the width */
+      font-family: Arial, sans-serif; /* Example font family */
+      padding: 8px; /* Example padding */
+      border: 1px solid #ccc; /* Example border */
+    }
+
+  </style>
+</head>
+<body>
+  <div id="pageContainer">
+    <div id="jsonContainer">
+      <h3>JSON Output</h3>
+      <pre id="jsonOutput"></pre>
+    </div>
+    <div id="blocklyDiv">
+      <button id="resetButton" class="actionButton">Reset Workspace</button>
+    </div>
+    <div id="tableContainer">
+      <h3>Table output</h3>
+      <table id="dataTable">
+        <thead>
+          <tr>
+            <th>X</th>
+            <th>Y</th>
+            <th>Z</th>
+            <th>Movement</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="randomValue"></td>
+            <td class="randomValue"></td>
+            <td class="randomValue"></td>
+            <td></td>
+          </tr>
+          <tr>
+            <td class="randomValue"></td>
+            <td class="randomValue"></td>
+            <td class="randomValue"></td>
+            <td></td>
+          </tr>
+          <tr>
+            <td class="zeroValue">0</td>
+            <td class="zeroValue">0</td>
+            <td class="zeroValue">0</td>
+            <td></td>
+          </tr>
+          <tr>
+            <td class="zeroValue">0</td>
+            <td class="zeroValue">0</td>
+            <td class="zeroValue">0</td>
+            <td></td>
+          </tr>
+          <tr>
+            <td class="randomValue"></td>
+            <td class="randomValue"></td>
+            <td class="randomValue"></td>
+            <td></td>
+          </tr>
+          <tr>
+            <td class="randomValue"></td>
+            <td class="randomValue"></td>
+            <td class="randomValue"></td>
+            <td></td>
+          </tr>
+        </tbody>
+      </table>
+      <button id="generateButton">Generate</button>
+      <button id="resetTableButton">Reset Table</button>
+      <div class="slider-container">
+        <span>Delay:</span>
+        <input type="range" min="0" max="1000" value="500" class="slider" id="speedSlider">
+      </div>
+      <div class="message-container" style="margin-top: 20px;">
+        <label for="messageField">Message:</label>
+        <textarea id="messageTextarea" rows="4" cols="50"></textarea>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Function to generate random numerical values
+    const generateRandomNumber = () => {
+      return Math.floor(Math.random() * 201) - 100; // Generates a random number between -100 and 100
+    };
+
+    // Populate random numerical values into table cells
+    document.addEventListener('DOMContentLoaded', () => {
+      const randomValueCells = document.querySelectorAll('.randomValue');
+      randomValueCells.forEach(cell => {
+        cell.textContent = generateRandomNumber();
+      });
+
+      // Assign 0 to specific rows
+      const zeroValueCells = document.querySelectorAll('.zeroValue');
+      zeroValueCells.forEach(cell => {
+        cell.textContent = '0';
+      });
+    });
+
+  </script>
+</body>
+</html>
