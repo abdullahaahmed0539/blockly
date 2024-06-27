@@ -147,7 +147,7 @@ const compareRecursively = (inputs: any, index: number, movement: any) => {
   }
 }
 
-const performMathArithmeticOperation = (block: any, index: number) => {
+const performMathArithmeticOperation = (block: any, index: number, returnIndex: Boolean = true) => {
   const valueBlock = block.inputs?.VALUE?.block ?? block;
   const operation = valueBlock?.fields.OP;
   const mathArithmeticInputs = valueBlock.inputs;
@@ -192,15 +192,12 @@ const performMathArithmeticOperation = (block: any, index: number) => {
       result = Math.pow(inputA, inputB);
       break;  
   }
-  return result - 1;
+  return returnIndex ? result - 1: result ;
 }
 
 const fillMovementValuesRecursively = async (index: number, movement: any, block: any) => {
   workspace.highlightBlock(block.id);
-
-   // Add a small delay to allow the highlight to be visible
-   const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
-   await delay(parseInt(speedSlider.value)); // Adjust the delay time as needed
+  await delay(parseInt(speedSlider.value)); // Adjust the delay time as needed
 
   
   if(block.type === 'foreach_row_in_table'){
@@ -214,6 +211,7 @@ const fillMovementValuesRecursively = async (index: number, movement: any, block
   if(block.type === 'text_print')  {
     messageField.value = block?.fields?.TEXT || '';
   }
+
   if(block.type === 'variables_set_row'){ 
     if(block.inputs?.VALUE.block.type === 'math_number') {
       index = block.inputs?.VALUE.block.fields.NUM - 1; 
@@ -222,6 +220,7 @@ const fillMovementValuesRecursively = async (index: number, movement: any, block
       index = performMathArithmeticOperation(block, index);
     }
   }
+
   if(block.type === 'variables_set_movement') {
     if(index > -1 && tableBody && tableBody.rows[index] && tableBody.rows[index].cells[3]) {
       const row = tableBody.rows[index];
@@ -237,9 +236,28 @@ const fillMovementValuesRecursively = async (index: number, movement: any, block
       // arr[index] = block.inputs.VALUE.block.fields.BOOL
     };
       movement = block.inputs?.VALUE.block.fields.BOOL;
+  }
+
+  if(block.type === 'increase_row_by'){
+    if(block.inputs?.VALUE.block.type === 'variables_get_row') {
+      index = (2*index) + 1;
     }
+    if(block.inputs?.VALUE.block.type === 'math_number') {
+      index +=  block.inputs?.VALUE.block.fields.NUM ; 
+    }
+    if(block.inputs?.VALUE.block.type === 'math_arithmetic'){
+      index += performMathArithmeticOperation(block, index, false) + 1;
+    }
+  }
 
   if(block.type === 'controls_if' && compareRecursively(block.inputs, index, movement))  [index, movement] = await fillMovementValuesRecursively(index, movement, block.inputs.DO0.block);
+  if(block.type === 'controls_if_else'){
+    [index, movement] = compareRecursively(block.inputs, index, movement) ?  
+      await fillMovementValuesRecursively(index, movement, block.inputs.DO0.block): 
+      await fillMovementValuesRecursively(index, movement, block.inputs.ELSE.block);
+  }
+
+  
   if(block.next) [index, movement] = await fillMovementValuesRecursively(index, movement, block.next.block);
   return [index, movement];
 } 
@@ -308,4 +326,6 @@ const decreaseSliderValue = () => {
   speedSlider.value = newValue.toString();
 };
 
+ // Add a small delay to allow the highlight to be visible
+   const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 

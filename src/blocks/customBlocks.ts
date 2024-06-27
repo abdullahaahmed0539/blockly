@@ -88,7 +88,7 @@ const variablesGetRow = {
       ]
     }
   ],
-  output: null,
+  output: 'Number',
   colour: 330,
   tooltip: '',
   helpUrl: '',
@@ -107,7 +107,8 @@ const variablesGetMovement = {
       ]
     }
   ],
-  output: null,
+  output: 'Boolean',
+  // output: null,
   colour: 330,
   tooltip: '',
   helpUrl: '',
@@ -145,6 +146,56 @@ const forEachRowInTable = {
   helpUrl: '',
 };
 
+const increaseRowBy = {
+  type: 'increase_row_by',
+  message0: 'increase %1 by %2',
+  args0: [
+    {
+      type: 'field_dropdown',
+      name: 'ROW',
+      options: [
+        ['row', 'row']
+      ]
+    },
+    {
+      type: 'input_value',
+      name: 'VALUE',
+      check: 'Number' // Ensures that the input is a number
+    }
+  ],
+  previousStatement: null,
+  nextStatement: null,
+  colour: 330,
+  tooltip: 'Increase the value of a row by a number',
+  helpUrl: ''
+};
+
+const controlsIfElse = {
+  type: 'controls_if_else',
+  message0: 'if %1 do %2 else %3',
+  args0: [
+    {
+      type: 'input_value',
+      name: 'IF0',
+      check: 'Boolean'
+    },
+    {
+      type: 'input_statement',
+      name: 'DO0'
+    },
+    {
+      type: 'input_statement',
+      name: 'ELSE'
+    }
+  ],
+  previousStatement: null,
+  nextStatement: null,
+  colour: 210,
+  tooltip: 'If-Else block: Executes the "then" statements if the condition is true, otherwise executes the "else" statements',
+  helpUrl: '',
+};
+
+
 
 // Create the block definitions for the JSON-only blocks.
 // This does not register their definitions with Blockly.
@@ -157,5 +208,7 @@ export const blocks = Blockly.common.createBlockDefinitionsFromJsonArray([
   variablesGetMovement,
   textPrint,
   forEachRowInTable, // Include the new block definition here
+  increaseRowBy ,
+  controlsIfElse,
 
 ]);

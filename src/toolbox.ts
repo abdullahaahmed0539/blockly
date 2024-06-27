@@ -157,5 +157,13 @@ export const toolbox = {
       kind: 'block',
       type: 'foreach_row_in_table', // Include the new block here
     },
+    {
+      kind: 'block',
+      type: 'increase_row_by', // Include the new block here
+    },
+    {
+      kind: 'block',
+      type: 'controls_if_else'
+    },
   ],
 };
