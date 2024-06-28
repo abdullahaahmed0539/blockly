@@ -86,6 +86,7 @@ const resetOutput = () => {
 
 
 const compareRecursively = (inputs: any, index: number, movement: any) => {
+  
   if(inputs?.block?.type === "math_number")  {
     return inputs.block.fields.NUM
   }
@@ -103,6 +104,7 @@ const compareRecursively = (inputs: any, index: number, movement: any) => {
   }
   else{
     if(!inputs?.IF0?.block?.inputs  && inputs?.IF0?.block?.type === "logic_boolean")  return  inputs?.IF0?.block?.fields.BOOL === 'TRUE'? true: false;
+    if(!inputs?.IF0?.block?.inputs  && inputs?.IF0?.block?.type === "variables_get_movement")  return  (movement === 'TRUE' || movement === true)? true: false;
     if(inputs?.IF0?.block?.inputs){
       var comparisonType = inputs?.IF0?.block?.type 
       var comparisonOp = inputs?.IF0?.block?.fields.OP;
@@ -172,7 +174,6 @@ const performMathArithmeticOperation = (block: any, index: number, returnIndex: 
   else{
     inputB = performMathArithmeticOperation(mathArithmeticInputs?.B?.block, index);
   }
-   
 
   let result = 0;
   switch(operation){
@@ -196,23 +197,22 @@ const performMathArithmeticOperation = (block: any, index: number, returnIndex: 
 }
 
 const fillMovementValuesRecursively = async (index: number, movement: any, block: any) => {
-  workspace.highlightBlock(block.id);
+  workspace.highlightBlock(block?.id);
   await delay(parseInt(speedSlider.value)); // Adjust the delay time as needed
 
   
-  if(block.type === 'foreach_row_in_table'){
+  if(block?.type === 'foreach_row_in_table'){
     const rowCount = tableBody!.rows.length;
-    console.log(rowCount)
     for(let i = 0; i < rowCount; i++){
       [index, movement] = await fillMovementValuesRecursively(index, movement, block.inputs?.DO.block)
     }
   }
 
-  if(block.type === 'text_print')  {
+  if(block?.type === 'text_print')  {
     messageField.value = block?.fields?.TEXT || '';
   }
 
-  if(block.type === 'variables_set_row'){ 
+  if(block?.type === 'variables_set_row'){ 
     if(block.inputs?.VALUE.block.type === 'math_number') {
       index = block.inputs?.VALUE.block.fields.NUM - 1; 
     }
@@ -221,7 +221,7 @@ const fillMovementValuesRecursively = async (index: number, movement: any, block
     }
   }
 
-  if(block.type === 'variables_set_movement') {
+  if(block?.type === 'variables_set_movement') {
     if(index > -1 && tableBody && tableBody.rows[index] && tableBody.rows[index].cells[3]) {
       const row = tableBody.rows[index];
       if(block.inputs?.VALUE.block.inputs){
@@ -238,7 +238,7 @@ const fillMovementValuesRecursively = async (index: number, movement: any, block
       movement = block.inputs?.VALUE.block.fields.BOOL;
   }
 
-  if(block.type === 'increase_row_by'){
+  if(block?.type === 'increase_row_by'){
     if(block.inputs?.VALUE.block.type === 'variables_get_row') {
       index = (2*index) + 1;
     }
@@ -250,15 +250,16 @@ const fillMovementValuesRecursively = async (index: number, movement: any, block
     }
   }
 
-  if(block.type === 'controls_if' && compareRecursively(block.inputs, index, movement))  [index, movement] = await fillMovementValuesRecursively(index, movement, block.inputs.DO0.block);
-  if(block.type === 'controls_if_else'){
-    [index, movement] = compareRecursively(block.inputs, index, movement) ?  
-      await fillMovementValuesRecursively(index, movement, block.inputs.DO0.block): 
-      await fillMovementValuesRecursively(index, movement, block.inputs.ELSE.block);
+
+  if(block?.type === 'controls_if' && compareRecursively(block?.inputs, index, movement))  [index, movement] = await fillMovementValuesRecursively(index, movement, block?.inputs?.DO0?.block);
+  if(block?.type === 'controls_if_else'){
+    [index, movement] = compareRecursively(block?.inputs, index, movement) ?  
+      await fillMovementValuesRecursively(index, movement, block?.inputs?.DO0?.block): 
+      await fillMovementValuesRecursively(index, movement, block?.inputs?.ELSE?.block);
   }
 
   
-  if(block.next) [index, movement] = await fillMovementValuesRecursively(index, movement, block.next.block);
+  if(block?.next) [index, movement] = await fillMovementValuesRecursively(index, movement, block?.next?.block);
   return [index, movement];
 } 
 
