@@ -29,7 +29,7 @@ const workspace = Blockly.inject(blocklyDiv, {
   toolbox, 
   trashcan: true,
   scrollbars: true,
-
+// rtl: true,
   zoom: {
     controls: true
   }
@@ -82,8 +82,6 @@ const resetOutput = () => {
     tableBody!.rows[i].cells[3].innerHTML = '';
   }
 }
-
-
 
 const compareRecursively = (inputs: any, index: number, movement: any) => {
   
@@ -198,9 +196,10 @@ const performMathArithmeticOperation = (block: any, index: number, returnIndex: 
 
 const fillMovementValuesRecursively = async (index: number, movement: any, block: any) => {
   workspace.highlightBlock(block?.id);
+   // Add a small delay to allow the highlight to be visible
+  const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
   await delay(parseInt(speedSlider.value)); // Adjust the delay time as needed
 
-  
   if(block?.type === 'foreach_row_in_table'){
     const rowCount = tableBody!.rows.length;
     for(let i = 0; i < rowCount; i++){
@@ -208,11 +207,9 @@ const fillMovementValuesRecursively = async (index: number, movement: any, block
     }
   }
 
-  if(block?.type === 'text_print')  {
-    messageField.value = block?.fields?.TEXT || '';
-  }
+  if(block?.type === 'text_print') messageField.value = block?.fields?.TEXT || '';
 
-  if(block?.type === 'variables_set_row'){ 
+  if(block?.type === 'variables_set_row' || block?.type === 'variables_set_row_ar'){ 
     if(block.inputs?.VALUE.block.type === 'math_number') {
       index = block.inputs?.VALUE.block.fields.NUM - 1; 
     }
@@ -250,15 +247,14 @@ const fillMovementValuesRecursively = async (index: number, movement: any, block
     }
   }
 
-
-  if(block?.type === 'controls_if' && compareRecursively(block?.inputs, index, movement))  [index, movement] = await fillMovementValuesRecursively(index, movement, block?.inputs?.DO0?.block);
+  if(block?.type === 'controls_if' && compareRecursively(block?.inputs, index, movement)) [index, movement] = await fillMovementValuesRecursively(index, movement, block?.inputs?.DO0?.block);
+  
   if(block?.type === 'controls_if_else'){
     [index, movement] = compareRecursively(block?.inputs, index, movement) ?  
       await fillMovementValuesRecursively(index, movement, block?.inputs?.DO0?.block): 
       await fillMovementValuesRecursively(index, movement, block?.inputs?.ELSE?.block);
   }
 
-  
   if(block?.next) [index, movement] = await fillMovementValuesRecursively(index, movement, block?.next?.block);
   return [index, movement];
 } 
@@ -276,6 +272,52 @@ if (resetTableButton) resetTableButton.addEventListener('click', resetOutput);
 // Initial setup: Set default variables, load from storage, and run code
 setDefaultVariables(workspace, ['row', 'movement']);
 load(workspace);
+
+// if(workspace.getAllBlocks().length < 1){
+
+  const setRowBlock = workspace.newBlock('variables_set_row');
+  setRowBlock.setFieldValue('row', 'VAR');
+
+  var valueBlock1 = workspace.newBlock('math_number');
+  valueBlock1.setFieldValue(2, 'NUM');  
+  setRowBlock.getInput('VALUE')?.connection?.connect(valueBlock1.outputConnection);
+
+  const setMovementBlock = workspace.newBlock('variables_set_movement');
+  setMovementBlock.setFieldValue('movement', 'VAR');
+  const valueBlock = workspace.newBlock('logic_boolean');
+  valueBlock.setFieldValue('FALSE', 'BOOL');  
+  setMovementBlock.getInput('VALUE')?.connection?.connect(valueBlock.outputConnection);
+
+  const setMovementBlock2 = workspace.newBlock('variables_set_movement');
+  setMovementBlock2.setFieldValue('movement', 'VAR');
+  const valueBlock2 = workspace.newBlock('logic_boolean');
+  valueBlock2.setFieldValue('FALSE', 'BOOL');  
+  setMovementBlock2.getInput('VALUE')?.connection?.connect(valueBlock2.outputConnection);
+
+
+  setRowBlock.nextConnection?.connect(setMovementBlock.previousConnection);
+  setMovementBlock.nextConnection?.connect(setMovementBlock2.previousConnection);
+
+  const foreachBlock = workspace.newBlock('foreach_row_in_table');
+  console.log(foreachBlock.getInput('DO'))
+  foreachBlock.getInput('DO')?.connection?.connect(setRowBlock.previousConnection);
+
+
+
+  setRowBlock.initSvg();
+  valueBlock1.initSvg();
+  setRowBlock.render();
+  valueBlock1.render();
+  setMovementBlock.initSvg();
+  valueBlock.initSvg();
+  setMovementBlock.render();
+  valueBlock.render();
+
+//   setMovementBlock.moveBy(50, 50);
+//   save(workspace);
+
+// }
+
 
 // Save changes to storage whenever workspace state changes
 workspace.addChangeListener(event => {
@@ -300,6 +342,7 @@ document.addEventListener('keydown', async (event) => {
       await resetWorkspace();
     } 
     else  if (event.key.toLowerCase() === 'r') {
+      console.log('here')
       await runCode(); 
     }
     else if (event.key.toLowerCase() === 't') {
@@ -327,6 +370,7 @@ const decreaseSliderValue = () => {
   speedSlider.value = newValue.toString();
 };
 
- // Add a small delay to allow the highlight to be visible
-   const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
+
+
 
